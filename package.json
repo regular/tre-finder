@@ -1,0 +1,39 @@
+{
+  "name": "tre-finder",
+  "version": "1.0.0",
+  "description": "Organize, rename and sort objects in a tree",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/regular/tre-finder.git"
+  },
+  "keywords": [
+    "tre",
+    "ssb",
+    "ssb-revisions"
+  ],
+  "author": "Jan Bölsche <jan@lagomorph.de> (https://regular.codes/)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/regular/tre-finder/issues"
+  },
+  "homepage": "https://github.com/regular/tre-finder#readme",
+  "tre-init": {
+    "plugins": {
+      "tre-client": true,
+      "ssb-revisions": true
+    }
+  },
+  "devDependencies": {
+    "ssb-revisions": "^1.0.1",
+    "tre-client": "^1.1.0"
+  },
+  "dependencies": {
+    "tre-sortable-list": "^1.0.0",
+    "tre-string": "^1.0.1",
+    "tre-treeview-select": "^1.2.0"
+  }
+}

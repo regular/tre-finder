@@ -9,6 +9,9 @@ setStyle(`
     --tre-selection-color: green;
     --tre-secondary-selection-color: yellow;
   }
+  .tre-finder {
+    max-width: 300px;
+  }
 `)
 
 client( (err, ssb, config) => {
@@ -18,7 +21,8 @@ client( (err, ssb, config) => {
   const sel = Value()
 
   const renderFinder = Finder(ssb, {
-    primarySelection: sel
+    primarySelection: sel,
+    skipFirstLevel: true
   })
 
   document.body.appendChild(

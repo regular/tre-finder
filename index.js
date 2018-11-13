@@ -5,7 +5,6 @@ const Value = require('mutant/value')
 const setStyle = require('module-styles')('tre-finde')
 const List = require('tre-sortable-list')
 
-
 module.exports = function(ssb, opts) {
   const primarySelection = opts.primarySelection || Value()
   const secondarySelections = opts.secondarySelections || Value([])
@@ -18,7 +17,10 @@ module.exports = function(ssb, opts) {
       padding-left: .8em;
     }
     span {
-      margin: .2em;
+      margin-right: .4em;
+    }
+    span[data-key] {
+      width: 100%;
     }
     span[data-key].selected {
       background-color: var(--tre-selection-color);
@@ -52,21 +54,42 @@ module.exports = function(ssb, opts) {
     }, cb)
   }
   
+  function summary(kv) {
+    return [
+      h('span', kv.value.content.type),
+      renderString(kv.value.content.name)
+    ]
+  }
+
   const renderTree = Tree(ssb, Object.assign({}, opts, {
-    listRenderer: opts => List(Object.assign({}, opts, {
-      patch
-    })),
     primarySelection,
     secondarySelections,
-    summary: kv => [h('span', kv.value.content.type), renderString(kv.value.content.name)]
+    summary,
+    listRenderer: opts => List(Object.assign({}, opts, {
+      patch
+    }))
   }))
 
-  return function(root, ctx) {
-    return renderTree({
-      key: root,
-      value: { content: { name: 'root' } }
-    }, ctx)
+  return function(kv, ctx) {
+    const tree = Value()
+    const finder = h('div.tre-finder', tree)
+
+    if (typeof kv === 'string') {
+      ssb.revisions.get(kv, (err, kv) => {
+        if (err) return tree.set(err.message)
+        setTree(kv)
+      })
+    } else {
+      setTree(kv)
+    }
+
+    function setTree(kv) {
+      tree.set(renderTree(kv, ctx))
+    }
+
+    return finder
   }
+
 }
 
 // -- utils

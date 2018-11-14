@@ -4,12 +4,13 @@ const h = require('mutant/html-element')
 const Value = require('mutant/value')
 const setStyle = require('module-styles')('tre-finde')
 const List = require('tre-sortable-list')
+const dropzone = require('tre-dropzone')
 
 module.exports = function(ssb, opts) {
   const importer = opts.importer
   const primarySelection = opts.primarySelection || Value()
   const secondarySelections = opts.secondarySelections || Value([])
-  const manualOrderKey = 'manual_order_index'
+  const manualOrderKey = 'manual-order-index'
   const manualOrder = opts.manualOrder || {
     get: kv => kv.value.content && kv.value.content[manualOrderKey] || 0,
     set: (kv, index, cb) => {
@@ -20,6 +21,7 @@ module.exports = function(ssb, opts) {
   setStyle(`
     li.drag-wrap {
       list-style-type: none;
+      padding: .2em;
     }
     details > ul {
       padding-left: .8em;
@@ -62,11 +64,20 @@ module.exports = function(ssb, opts) {
     }, cb)
   }
   
-  function summary(kv) {
-    return [
-      h('span', kv.value.content.type),
+  function summary(kv, ctx) {
+    return h('span.summary', [
+      h('span.tre-dropzone', dropzone.obj({
+        ctx: Object.assign({}, ctx, {
+          path: ctx.path.concat(kv)
+        }),
+        on_drop: drop => {
+          handleDrop(Object.assign({}, drop, {
+            where: {preposition: 'inside', relativeTo: kv.key}
+          }))
+        }
+      }), kv.value.content.type),
       renderString(kv.value.content.name)
-    ]
+    ])
   }
 
   const renderTree = Tree(ssb, Object.assign({}, opts, {
@@ -84,6 +95,7 @@ module.exports = function(ssb, opts) {
   }))
 
   function handleDrop(drop) {
+    console.log('handle drop', drop)
     const files = drop.dataTransfer.files 
     const parent_kv = drop.ctx.path.slice(-1)[0]
     const branch = parent_kv.value.content.revisionRoot || parent_kv.key
@@ -92,11 +104,15 @@ module.exports = function(ssb, opts) {
       for(let i=0; i<files.length; ++i) {
         // jshint -W083
         importer.importFile(files[i], {}, (err, content) => {
+          if (err) return console.error(err)
+          console.log('importer returns', content)
           content = Object.assign(content, {
-            [manualOrderKey]: drop.where.manual_order_index,
-            branch,
-            root
+            branch, root
           })
+          const mo = drop.where.manual_order_index
+          if (mo !== undefined) {
+            content[manualOrderKey] = mo
+          }
           //console.log('import result', err, content)
           ssb.publish(content, (err, msg) => {
             console.log('imported file wrap result', err, msg)

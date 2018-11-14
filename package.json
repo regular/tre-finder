@@ -34,6 +34,7 @@
     "tre-fonts": "^1.1.0"
   },
   "dependencies": {
+    "tre-dropzone": "^1.0.0",
     "tre-sortable-list": "^1.1.0",
     "tre-string": "^1.0.1",
     "tre-treeview-select": "^1.2.0"

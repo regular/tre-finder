@@ -29,10 +29,12 @@
   },
   "devDependencies": {
     "ssb-revisions": "^1.0.1",
-    "tre-client": "^1.1.0"
+    "tre-client": "^1.1.0",
+    "tre-file-importer": "^1.0.0",
+    "tre-fonts": "^1.1.0"
   },
   "dependencies": {
-    "tre-sortable-list": "^1.0.0",
+    "tre-sortable-list": "^1.1.0",
     "tre-string": "^1.0.1",
     "tre-treeview-select": "^1.2.0"
   }

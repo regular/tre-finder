@@ -3,6 +3,7 @@ const Finder = require('.')
 const h = require('mutant/html-element')
 const Value = require('mutant/value')
 const setStyle = require('module-styles')('tre-finder-demo')
+const Importer = require('tre-file-importer')
 
 setStyle(`
   body {
@@ -18,12 +19,18 @@ client( (err, ssb, config) => {
   console.log('tre config', config.tre)
   if (err) return console.error(err)
 
+  const importer = Importer(ssb)
+  importer.use(require('tre-fonts'))
+  
   const sel = Value()
 
   const renderFinder = Finder(ssb, {
+    importer,
     primarySelection: sel,
     skipFirstLevel: true
   })
+
+
 
   document.body.appendChild(
     h('div', [

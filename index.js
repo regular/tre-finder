@@ -6,8 +6,16 @@ const setStyle = require('module-styles')('tre-finde')
 const List = require('tre-sortable-list')
 
 module.exports = function(ssb, opts) {
+  const importer = opts.importer
   const primarySelection = opts.primarySelection || Value()
   const secondarySelections = opts.secondarySelections || Value([])
+  const manualOrderKey = 'manual_order_index'
+  const manualOrder = opts.manualOrder || {
+    get: kv => kv.value.content && kv.value.content[manualOrderKey] || 0,
+    set: (kv, index, cb) => {
+      patch(kv.key, {[manualOrderKey]: index}, cb)
+    }
+  }
 
   setStyle(`
     li.drag-wrap {
@@ -65,10 +73,38 @@ module.exports = function(ssb, opts) {
     primarySelection,
     secondarySelections,
     summary,
-    listRenderer: opts => List(Object.assign({}, opts, {
-      patch
+    listRenderer: o => List(Object.assign({}, opts, o, {
+      patch,
+      manualOrder,
+      on_drop: info => {
+        console.log('DROP', info)
+        handleDrop(info)
+      }
     }))
   }))
+
+  function handleDrop(drop) {
+    const files = drop.dataTransfer.files 
+    const parent_kv = drop.ctx.path.slice(-1)[0]
+    const branch = parent_kv.value.content.revisionRoot || parent_kv.key
+    const root = parent_kv.value.content.root || parent_kv.key
+    if (files.length) {
+      for(let i=0; i<files.length; ++i) {
+        // jshint -W083
+        importer.importFile(files[i], {}, (err, content) => {
+          content = Object.assign(content, {
+            [manualOrderKey]: drop.where.manual_order_index,
+            branch,
+            root
+          })
+          //console.log('import result', err, content)
+          ssb.publish(content, (err, msg) => {
+            console.log('imported file wrap result', err, msg)
+          })
+        })
+      }
+    }
+  }
 
   return function(kv, ctx) {
     const tree = Value()

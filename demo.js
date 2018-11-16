@@ -21,6 +21,7 @@ client( (err, ssb, config) => {
 
   const importer = Importer(ssb)
   importer.use(require('tre-fonts'))
+  importer.use(require('tre-images'))
   
   const sel = Value()
 

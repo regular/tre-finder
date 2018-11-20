@@ -88,7 +88,7 @@ module.exports = function(ssb, opts) {
         }
       }), kv.value.content.type),
       renderString(kv.value.content.name),
-      renderFactoryMenu(kv, factory, createNew)
+      factory ?  renderFactoryMenu(kv, factory, createNew) : []
     ])
   }
 

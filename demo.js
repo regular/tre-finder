@@ -2,6 +2,7 @@ const {client} = require('tre-client')
 const Finder = require('.')
 const h = require('mutant/html-element')
 const Value = require('mutant/value')
+const computed = require('mutant/computed')
 const setStyle = require('module-styles')('tre-finder-demo')
 const Importer = require('tre-file-importer')
 
@@ -23,11 +24,12 @@ client( (err, ssb, config) => {
   importer.use(require('tre-fonts'))
   importer.use(require('tre-images'))
   
-  const sel = Value()
+  const sel_kv = Value()
+  const sel = computed(sel_kv, kv => kv && kv.key)
 
   const renderFinder = Finder(ssb, {
     importer,
-    primarySelection: sel,
+    primarySelection: sel_kv,
     skipFirstLevel: true
   })
 

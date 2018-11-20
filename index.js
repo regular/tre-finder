@@ -8,6 +8,7 @@ const dropzone = require('tre-dropzone')
 
 module.exports = function(ssb, opts) {
   const importer = opts.importer
+  const factory = opts.factory
   const primarySelection = opts.primarySelection || Value()
   const secondarySelections = opts.secondarySelections || Value([])
   const manualOrderKey = 'manual-order-index'
@@ -46,7 +47,7 @@ module.exports = function(ssb, opts) {
       return ancestorHasClass(el, 'selected')
     },
     save: (text, el) => {
-      const key = el.parentElement.getAttribute('data-key')
+      const key = el.closest('[data-key]').getAttribute('data-key')
       console.log('Saving', key, text)
       ssb.revisions.patch(key, content => {
         content.name = text
@@ -63,6 +64,16 @@ module.exports = function(ssb, opts) {
       return Object.assign(content, p)
     }, cb)
   }
+
+  function createNew(parent_kv, content) {
+    const parent_revRoot = parent_kv.value.content.revisionRoot || parent_kv.key
+    content.branch = parent_revRoot
+    content.name = 'no name yet'
+    ssb.publish(content, (err, msg) => {
+      if (err) return console.error(err)
+      console.log('published', msg)
+    })
+  }
   
   function summary(kv, ctx) {
     return h('span.summary', [
@@ -76,8 +87,35 @@ module.exports = function(ssb, opts) {
           }))
         }
       }), kv.value.content.type),
-      renderString(kv.value.content.name)
+      renderString(kv.value.content.name),
+      renderFactoryMenu(kv, factory, createNew)
     ])
+  }
+
+  function renderFactoryMenu(parent_kv, factory, createNew) {
+    const entries = factory.menu('en')
+    entries.push({label: 'Cancel', type: ''})
+    entries.unshift({label: 'Insert', type: ''})
+    return h('select.tre-factory-menu', {
+      'ev-change': e =>{
+        if (e.target.value) {
+          console.log('making new', e.target.value)
+          const content = factory.make(e.target.value)
+          createNew(parent_kv, content)
+        }
+        e.target.value = ''
+        return false
+      },
+      'ev-click': e => {
+        e.stopPropagation()
+        e.preventDefault()
+      }
+    },
+    entries.map( ({type, label}) => {
+      return h('option', {
+        value: type
+      }, `${type ? 'New ' : ''}${label}`)
+    }))
   }
 
   const renderTree = Tree(ssb, Object.assign({}, opts, {

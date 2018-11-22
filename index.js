@@ -7,6 +7,7 @@ const List = require('tre-sortable-list')
 const dropzone = require('tre-dropzone')
 
 module.exports = function(ssb, opts) {
+  opts = opts || {}
   const importer = opts.importer
   const factory = opts.factory
   const primarySelection = opts.primarySelection || Value()
@@ -22,7 +23,6 @@ module.exports = function(ssb, opts) {
   setStyle(`
     li.drag-wrap {
       list-style-type: none;
-      padding: .2em;
     }
     details > ul {
       padding-left: .8em;
@@ -161,6 +161,7 @@ module.exports = function(ssb, opts) {
   }
 
   return function(kv, ctx) {
+    ctx = ctx || {}
     const tree = Value()
     const finder = h('div.tre-finder', tree)
 

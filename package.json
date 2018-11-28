@@ -1,6 +1,6 @@
 {
   "name": "tre-finder",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Organize, rename and sort objects in a tree",
   "main": "index.js",
   "scripts": {

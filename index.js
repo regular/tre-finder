@@ -2,7 +2,7 @@ const Tree = require('tre-treeview-select')
 const Str = require('tre-string')
 const h = require('mutant/html-element')
 const Value = require('mutant/value')
-const setStyle = require('module-styles')('tre-finde')
+const setStyle = require('module-styles')('tre-finder')
 const List = require('tre-sortable-list')
 const dropzone = require('tre-dropzone')
 
@@ -21,22 +21,22 @@ module.exports = function(ssb, opts) {
   }
 
   setStyle(`
-    li.drag-wrap {
+    .tre-finder li.drag-wrap {
       list-style-type: none;
     }
-    details > ul {
+    .tre-finder details > ul {
       padding-left: .8em;
     }
-    span {
+    .tre-finder span {
       margin-right: .4em;
     }
-    span[data-key] {
+    .tre-finder span[data-key] {
       width: 100%;
     }
-    span[data-key].selected {
+    .tre-finder span[data-key].selected {
       background-color: var(--tre-selection-color);
     }
-    span[data-key].secondary-selected {
+    .tre-finder span[data-key].secondary-selected {
       background-color: var(--tre-secondary-selection-color);
     }
   `)

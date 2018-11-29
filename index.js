@@ -88,7 +88,8 @@ module.exports = function(ssb, opts) {
         }
       }), kv.value.content.type),
       renderString(kv.value.content.name),
-      factory ?  renderFactoryMenu(kv, factory, createNew) : []
+      factory ?  renderFactoryMenu(kv, factory, createNew) : [],
+      opts.details ? opts.details(kv, ctx) : []
     ])
   }
 

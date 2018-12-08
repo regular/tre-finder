@@ -120,6 +120,7 @@ module.exports = function(ssb, opts) {
   }
 
   const renderTree = Tree(ssb, Object.assign({}, opts, {
+    sync: true,
     primarySelection,
     secondarySelections,
     summary,

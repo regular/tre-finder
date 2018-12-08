@@ -30,7 +30,8 @@ client( (err, ssb, config) => {
   const renderFinder = Finder(ssb, {
     importer,
     primarySelection: sel_kv,
-    skipFirstLevel: true
+    skipFirstLevel: true,
+    resolve_prototypes: true
   })
 
 

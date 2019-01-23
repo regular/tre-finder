@@ -21,7 +21,7 @@ client( (err, ssb, config) => {
   if (err) return console.error(err)
 
   const importer = Importer(ssb)
-  importer.use(require('tre-fonts'))
+  //importer.use(require('tre-fonts'))
   importer.use(require('tre-images'))
   
   const sel_kv = Value()
@@ -33,8 +33,6 @@ client( (err, ssb, config) => {
     skipFirstLevel: true,
     resolve_prototypes: true
   })
-
-
 
   document.body.appendChild(
     h('div', [

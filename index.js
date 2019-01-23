@@ -168,8 +168,13 @@ module.exports = function(ssb, opts) {
     const finder = h('div.tre-finder', tree)
 
     if (typeof kv === 'string') {
-      ssb.revisions.get(kv, (err, kv) => {
-        if (err) return tree.set(err.message)
+      ssb.revisions.get(kv, {meta: true}, (err, kv) => {
+        console.log('Finder root', kv)
+        if (err) {
+          console.error('Error getting tree root', err.message)
+          tree.set(err.message)
+          return
+        }
         setTree(kv)
       })
     } else {

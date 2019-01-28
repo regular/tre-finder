@@ -31,11 +31,11 @@
     "ssb-revisions": "^1.2.0",
     "tre-client": "^2.0.1",
     "tre-file-importer": "^3.1.0",
+    "tre-images": "^1.0.0",
     "tre-fonts": "^1.1.0"
   },
   "dependencies": {
     "tre-dropzone": "^1.0.0",
-    "tre-images": "^1.0.0",
     "tre-sortable-list": "^2.1.0",
     "tre-split-pane": "^1.0.1",
     "tre-string": "^1.0.1",

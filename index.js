@@ -143,7 +143,10 @@ module.exports = function(ssb, opts) {
     if (files.length) {
       for(let i=0; i<files.length; ++i) {
         // jshint -W083
-        importer.importFile(files[i], {}, (err, content) => {
+        // we pass one file at a time, which is probably what the user intended
+        // TODO: there might be situations where thisis not appropriate. For example, dropping
+        // several alternative files for the same font.
+        importer.importFiles(files[i], (err, content) => {
           if (err) return console.error(err)
           console.log('importer returns', content)
           content = Object.assign(content, {

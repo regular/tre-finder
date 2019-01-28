@@ -16,7 +16,7 @@
     "ssb-revisions"
   ],
   "author": "Jan Bölsche <jan@lagomorph.de> (https://regular.codes/)",
-  "license": "ISC",
+  "license": "AGPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/regular/tre-finder/issues"
   },
@@ -30,7 +30,7 @@
   "devDependencies": {
     "ssb-revisions": "^1.2.0",
     "tre-client": "^2.0.1",
-    "tre-file-importer": "^1.0.0",
+    "tre-file-importer": "^3.1.0",
     "tre-fonts": "^1.1.0"
   },
   "dependencies": {

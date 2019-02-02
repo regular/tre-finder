@@ -2,6 +2,7 @@ const Tree = require('tre-treeview-select')
 const Str = require('tre-string')
 const h = require('mutant/html-element')
 const Value = require('mutant/value')
+const computed = require('mutant/computed')
 const setStyle = require('module-styles')('tre-finder')
 const List = require('tre-sortable-list')
 const dropzone = require('tre-dropzone')
@@ -19,27 +20,8 @@ module.exports = function(ssb, opts) {
       patch(kv.key, {[manualOrderKey]: index}, cb)
     }
   }
-
-  setStyle(`
-    .tre-finder li.drag-wrap {
-      list-style-type: none;
-    }
-    .tre-finder details > ul {
-      padding-left: .8em;
-    }
-    .tre-finder span {
-      margin-right: .4em;
-    }
-    .tre-finder span[data-key] {
-      width: 100%;
-    }
-    .tre-finder span[data-key].selected {
-      background-color: var(--tre-selection-color);
-    }
-    .tre-finder span[data-key].secondary-selected {
-      background-color: var(--tre-secondary-selection-color);
-    }
-  `)
+  
+  styles()
 
   const renderString = Str({
     canEdit: el => {
@@ -58,6 +40,83 @@ module.exports = function(ssb, opts) {
       })
     }
   })
+
+  const renderTree = Tree(ssb, Object.assign({}, opts, {
+    sync: true,
+    primarySelection,
+    secondarySelections,
+    summary,
+    listRenderer: o => List(Object.assign({}, opts, o, {
+      patch,
+      manualOrder,
+      on_drop: info => {
+        console.log('DROP', info)
+        handleDrop(info)
+      }
+    }))
+  }))
+
+  const result = renderFinder
+  result.primarySelectionObs = ignoreRevision(primarySelection)
+
+  return result
+
+  function renderFinder(kv, ctx) {
+    ctx = ctx || {}
+    const tree = Value()
+    const finder = h('div.tre-finder', tree)
+
+    if (typeof kv === 'string') {
+      ssb.revisions.get(kv, {meta: true}, (err, kv) => {
+        console.log('Finder root', kv)
+        if (err) {
+          console.error('Error getting tree root', err.message)
+          tree.set(err.message)
+          return
+        }
+        setTree(kv)
+      })
+    } else {
+      setTree(kv)
+    }
+
+    function setTree(kv) {
+      tree.set(renderTree(kv, ctx))
+    }
+
+    return finder
+  }
+
+  function handleDrop(drop) {
+    console.log('handle drop', drop)
+    const files = drop.dataTransfer.files 
+    const parent_kv = drop.ctx.path.slice(-1)[0]
+    const branch = parent_kv.value.content.revisionRoot || parent_kv.key
+    const root = parent_kv.value.content.root || parent_kv.key
+    if (files.length) {
+      for(let i=0; i<files.length; ++i) {
+        // jshint -W083
+        // we pass one file at a time, which is probably what the user intended
+        // TODO: there might be situations where thisis not appropriate. For example, dropping
+        // several alternative files for the same font.
+        importer.importFiles(files[i], (err, content) => {
+          if (err) return console.error(err)
+          console.log('importer returns', content)
+          content = Object.assign(content, {
+            branch, root
+          })
+          const mo = drop.where.manual_order_index
+          if (mo !== undefined) {
+            content[manualOrderKey] = mo
+          }
+          //console.log('import result', err, content)
+          ssb.publish(content, (err, msg) => {
+            console.log('imported file wrap result', err, msg)
+          })
+        })
+      }
+    }
+  }
 
   function patch(key, p, cb) {
     ssb.revisions.patch(key, content => {
@@ -118,79 +177,6 @@ module.exports = function(ssb, opts) {
       }, `${type ? 'New ' : ''}${label}`)
     }))
   }
-
-  const renderTree = Tree(ssb, Object.assign({}, opts, {
-    sync: true,
-    primarySelection,
-    secondarySelections,
-    summary,
-    listRenderer: o => List(Object.assign({}, opts, o, {
-      patch,
-      manualOrder,
-      on_drop: info => {
-        console.log('DROP', info)
-        handleDrop(info)
-      }
-    }))
-  }))
-
-  function handleDrop(drop) {
-    console.log('handle drop', drop)
-    const files = drop.dataTransfer.files 
-    const parent_kv = drop.ctx.path.slice(-1)[0]
-    const branch = parent_kv.value.content.revisionRoot || parent_kv.key
-    const root = parent_kv.value.content.root || parent_kv.key
-    if (files.length) {
-      for(let i=0; i<files.length; ++i) {
-        // jshint -W083
-        // we pass one file at a time, which is probably what the user intended
-        // TODO: there might be situations where thisis not appropriate. For example, dropping
-        // several alternative files for the same font.
-        importer.importFiles(files[i], (err, content) => {
-          if (err) return console.error(err)
-          console.log('importer returns', content)
-          content = Object.assign(content, {
-            branch, root
-          })
-          const mo = drop.where.manual_order_index
-          if (mo !== undefined) {
-            content[manualOrderKey] = mo
-          }
-          //console.log('import result', err, content)
-          ssb.publish(content, (err, msg) => {
-            console.log('imported file wrap result', err, msg)
-          })
-        })
-      }
-    }
-  }
-
-  return function(kv, ctx) {
-    ctx = ctx || {}
-    const tree = Value()
-    const finder = h('div.tre-finder', tree)
-
-    if (typeof kv === 'string') {
-      ssb.revisions.get(kv, {meta: true}, (err, kv) => {
-        console.log('Finder root', kv)
-        if (err) {
-          console.error('Error getting tree root', err.message)
-          tree.set(err.message)
-          return
-        }
-        setTree(kv)
-      })
-    } else {
-      setTree(kv)
-    }
-
-    function setTree(kv) {
-      tree.set(renderTree(kv, ctx))
-    }
-
-    return finder
-  }
-
 }
 
 // -- utils
@@ -203,3 +189,40 @@ function ancestorHasClass(el, cl) {
   return false
 }
 
+function revisionRoot(kv) {
+  return kv && kv.value.content && kv.value.content.revisionRoot || kv && kv.key
+}
+
+function ignoreRevision(primarySelection) {
+  let current_kv
+  return computed(primarySelection, kv => {
+    if (current_kv && revisionRoot(current_kv) == revisionRoot(kv)) {
+      return computed.NO_CHANGE
+    }
+    current_kv = kv
+    return kv
+  })
+}
+
+function styles() {
+  setStyle(`
+    .tre-finder li.drag-wrap {
+      list-style-type: none;
+    }
+    .tre-finder details > ul {
+      padding-left: .8em;
+    }
+    .tre-finder span {
+      margin-right: .4em;
+    }
+    .tre-finder span[data-key] {
+      width: 100%;
+    }
+    .tre-finder span[data-key].selected {
+      background-color: var(--tre-selection-color);
+    }
+    .tre-finder span[data-key].secondary-selected {
+      background-color: var(--tre-secondary-selection-color);
+    }
+  `)
+}

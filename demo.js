@@ -31,7 +31,7 @@ client( (err, ssb, config) => {
     importer,
     primarySelection: sel_kv,
     skipFirstLevel: true,
-    resolve_prototypes: true
+    resolve_prototypes: true // is default
   })
 
   document.body.appendChild(

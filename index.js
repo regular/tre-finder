@@ -87,12 +87,61 @@ module.exports = function(ssb, opts) {
     return finder
   }
 
+  function move(kv, oldBranch, newBranch) {
+    // TODO: check if kv is about to move into one of its children
+    // and refuse to move. Otherwise, they'll vanish.
+    console.log('Moving', kv.key, 'from', oldBranch, 'to', newBranch)
+    if (kv.key == newBranch) {
+      return console.log("don't put node into itself!")
+    }
+    if (oldBranch == newBranch) {
+      return console.log('Nothing to do')
+    }
+    const branch = kv.value.content.branch
+    const branches = Array.isArray(branch) ? branch : [branch]
+    if (!branches.includes(oldBranch)) {
+      return console.error('branch does not contain old branch!')
+    }
+    const patchedBranches = branches.filter(b => b !== oldBranch).concat(newBranch)
+
+    patch(kv.key, {
+      branch: patchedBranches.length == 1 ? patchedBranches[0] : patchedBranches
+    }, (err, msg) => {
+      if (err) return console.error(err.message)
+      console.log('published move', msg)
+    })
+  }
+
+  function handleDroppedNode(dataTransfer, where) {
+    const json = dataTransfer.getData('application/json')
+    if (!json) return
+    let kvc
+    try {
+      kvc = JSON.parse(json)
+    } catch(e) {
+      console.warn('JSON parse error', e.message)
+    }
+    if (!kvc) return
+    console.log('dropped kvc', kvc)
+    const {ctx} = kvc
+    const oldParentKv = ctx.path.slice(-1)[0]
+    const oldBranch = revisionRoot(oldParentKv)
+    console.log('Moved from', oldBranch, 'to', where)
+    const {preposition, relativeTo} = where
+    if (preposition !== 'inside') return
+    const newBranch = relativeTo
+    move(kvc, oldBranch, newBranch)
+  }
+
   function handleDrop(drop) {
     console.log('handle drop', drop)
     const files = drop.dataTransfer.files 
     const parent_kv = drop.ctx.path.slice(-1)[0]
-    const branch = parent_kv.value.content.revisionRoot || parent_kv.key
+    const branch = revisionRoot(parent_kv)
     const root = parent_kv.value.content.root || parent_kv.key
+    if (!files.length) {
+      return handleDroppedNode(drop.dataTransfer, drop.where)
+    }
     if (files.length) {
       for(let i=0; i<files.length; ++i) {
         // jshint -W083

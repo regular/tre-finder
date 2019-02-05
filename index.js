@@ -90,9 +90,10 @@ module.exports = function(ssb, opts) {
   function move(kv, oldBranch, newBranch) {
     // TODO: check if kv is about to move into one of its children
     // and refuse to move. Otherwise, they'll vanish.
-    console.log('Moving', kv.key, 'from', oldBranch, 'to', newBranch)
-    if (kv.key == newBranch) {
-      return console.log("don't put node into itself!")
+    const revRoot = revisionRoot(kv)
+    console.log('Moving', revRoot, 'from', oldBranch, 'to', newBranch)
+    if (revRoot == newBranch) {
+      return console.log("don't move node into itself!")
     }
     if (oldBranch == newBranch) {
       return console.log('Nothing to do')

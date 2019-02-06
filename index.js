@@ -186,6 +186,7 @@ module.exports = function(ssb, opts) {
   
   function summary(kv, ctx) {
     return h('span.summary', [
+      opts.prolog ? opts.prolog(kv, ctx) : [],
       h('span.tre-dropzone', dropzone.obj({
         ctx: Object.assign({}, ctx, {
           path: ctx.path.concat(kv)

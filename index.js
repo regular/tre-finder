@@ -192,8 +192,10 @@ module.exports = function(ssb, opts) {
           path: ctx.path.concat(kv)
         }),
         on_drop: drop => {
+          console.log('on_drop on ', kv)
+          const relativeTo = revisionRoot(kv)
           handleDrop(Object.assign({}, drop, {
-            where: {preposition: 'inside', relativeTo: kv.key}
+            where: {preposition: 'inside', relativeTo}
           }))
         }
       }), kv.value.content.type),

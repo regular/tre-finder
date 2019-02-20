@@ -185,6 +185,8 @@ module.exports = function(ssb, opts) {
   }
   
   function summary(kv, ctx) {
+    let name = kv.value.content.name
+    if (!name || typeof name !== 'string') name = '[no name]'
     return h('span.summary', [
       opts.prolog ? opts.prolog(kv, ctx) : [],
       h('span.tre-dropzone', dropzone.obj({
@@ -199,7 +201,7 @@ module.exports = function(ssb, opts) {
           }))
         }
       }), kv.value.content.type),
-      renderString(kv.value.content.name),
+      renderString(name),
       factory ?  renderFactoryMenu(kv, factory, createNew) : [],
       opts.details ? opts.details(kv, ctx) : []
     ])

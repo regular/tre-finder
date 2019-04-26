@@ -15,7 +15,7 @@ module.exports = function(ssb, opts) {
   const secondarySelections = opts.secondarySelections || Value([])
   const manualOrderKey = 'manual-order-index'
   const manualOrder = opts.manualOrder || {
-    get: kv => kv.value.content && kv.value.content[manualOrderKey] || 0,
+    get: kv => kv && kv.value.content && kv.value.content[manualOrderKey] || 0,
     set: (kv, index, cb) => {
       patch(kv.key, {[manualOrderKey]: index}, cb)
     }
